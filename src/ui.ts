@@ -33,30 +33,28 @@ export class InteractiveUI {
 
     const choices = allUpdates.map(update => ({
       name: `${update.name}: ${update.currentVersion} → ${update.latestVersion} (${update.updateType})`,
-      value: update,
-      checked: update.updateType === 'patch'
+      value: update
     }));
 
-    const { selectedPackages } = await inquirer.prompt([
+    const { selectedPackage } = await inquirer.prompt([
       {
-        type: 'checkbox',
-        name: 'selectedPackages',
-        message: 'Select packages to upgrade:',
+        type: 'list',
+        name: 'selectedPackage',
+        message: 'Select ONE package to upgrade:',
         choices,
         pageSize: 15
       }
     ]);
 
-    return selectedPackages;
+    return [selectedPackage];
   }
 
   async confirmUpgrade(packages: PackageUpdate[]): Promise<boolean> {
     if (packages.length === 0) return false;
     
-    console.log(chalk.bold('\nSelected packages for upgrade:'));
-    packages.forEach(pkg => {
-      console.log(`  ${pkg.name}: ${chalk.red(pkg.currentVersion)} → ${chalk.green(pkg.latestVersion)}`);
-    });
+    console.log(chalk.bold('\nSelected package for upgrade:'));
+    const pkg = packages[0];
+    console.log(`  ${pkg.name}: ${chalk.red(pkg.currentVersion)} → ${chalk.green(pkg.latestVersion)}`);
     
     const { confirm } = await inquirer.prompt([
       {
