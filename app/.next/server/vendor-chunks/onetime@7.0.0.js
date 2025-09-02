@@ -1,0 +1,25 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+exports.id = "vendor-chunks/onetime@7.0.0";
+exports.ids = ["vendor-chunks/onetime@7.0.0"];
+exports.modules = {
+
+/***/ "(rsc)/./node_modules/.pnpm/onetime@7.0.0/node_modules/onetime/index.js":
+/*!************************************************************************!*\
+  !*** ./node_modules/.pnpm/onetime@7.0.0/node_modules/onetime/index.js ***!
+  \************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var mimic_function__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mimic-function */ \"(rsc)/./node_modules/.pnpm/mimic-function@5.0.1/node_modules/mimic-function/index.js\");\n\n\nconst calledFunctions = new WeakMap();\n\nconst onetime = (function_, options = {}) => {\n\tif (typeof function_ !== 'function') {\n\t\tthrow new TypeError('Expected a function');\n\t}\n\n\tlet returnValue;\n\tlet callCount = 0;\n\tconst functionName = function_.displayName || function_.name || '<anonymous>';\n\n\tconst onetime = function (...arguments_) {\n\t\tcalledFunctions.set(onetime, ++callCount);\n\n\t\tif (callCount === 1) {\n\t\t\treturnValue = function_.apply(this, arguments_);\n\t\t\tfunction_ = undefined;\n\t\t} else if (options.throw === true) {\n\t\t\tthrow new Error(`Function \\`${functionName}\\` can only be called once`);\n\t\t}\n\n\t\treturn returnValue;\n\t};\n\n\t(0,mimic_function__WEBPACK_IMPORTED_MODULE_0__[\"default\"])(onetime, function_);\n\tcalledFunctions.set(onetime, callCount);\n\n\treturn onetime;\n};\n\nonetime.callCount = function_ => {\n\tif (!calledFunctions.has(function_)) {\n\t\tthrow new Error(`The given function \\`${function_.name}\\` is not wrapped by the \\`onetime\\` package`);\n\t}\n\n\treturn calledFunctions.get(function_);\n};\n\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (onetime);\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvLnBucG0vb25ldGltZUA3LjAuMC9ub2RlX21vZHVsZXMvb25ldGltZS9pbmRleC5qcyIsIm1hcHBpbmdzIjoiOzs7OztBQUEyQzs7QUFFM0M7O0FBRUEsd0NBQXdDO0FBQ3hDO0FBQ0E7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7QUFDQSxJQUFJO0FBQ0osaUNBQWlDLGFBQWE7QUFDOUM7O0FBRUE7QUFDQTs7QUFFQSxDQUFDLDBEQUFhO0FBQ2Q7O0FBRUE7QUFDQTs7QUFFQTtBQUNBO0FBQ0EsMENBQTBDLGVBQWU7QUFDekQ7O0FBRUE7QUFDQTs7QUFFQSxpRUFBZSxPQUFPLEVBQUMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly9haS1taWdyYXRvci1hcHAvLi9ub2RlX21vZHVsZXMvLnBucG0vb25ldGltZUA3LjAuMC9ub2RlX21vZHVsZXMvb25ldGltZS9pbmRleC5qcz9iNzE3Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBtaW1pY0Z1bmN0aW9uIGZyb20gJ21pbWljLWZ1bmN0aW9uJztcblxuY29uc3QgY2FsbGVkRnVuY3Rpb25zID0gbmV3IFdlYWtNYXAoKTtcblxuY29uc3Qgb25ldGltZSA9IChmdW5jdGlvbl8sIG9wdGlvbnMgPSB7fSkgPT4ge1xuXHRpZiAodHlwZW9mIGZ1bmN0aW9uXyAhPT0gJ2Z1bmN0aW9uJykge1xuXHRcdHRocm93IG5ldyBUeXBlRXJyb3IoJ0V4cGVjdGVkIGEgZnVuY3Rpb24nKTtcblx0fVxuXG5cdGxldCByZXR1cm5WYWx1ZTtcblx0bGV0IGNhbGxDb3VudCA9IDA7XG5cdGNvbnN0IGZ1bmN0aW9uTmFtZSA9IGZ1bmN0aW9uXy5kaXNwbGF5TmFtZSB8fCBmdW5jdGlvbl8ubmFtZSB8fCAnPGFub255bW91cz4nO1xuXG5cdGNvbnN0IG9uZXRpbWUgPSBmdW5jdGlvbiAoLi4uYXJndW1lbnRzXykge1xuXHRcdGNhbGxlZEZ1bmN0aW9ucy5zZXQob25ldGltZSwgKytjYWxsQ291bnQpO1xuXG5cdFx0aWYgKGNhbGxDb3VudCA9PT0gMSkge1xuXHRcdFx0cmV0dXJuVmFsdWUgPSBmdW5jdGlvbl8uYXBwbHkodGhpcywgYXJndW1lbnRzXyk7XG5cdFx0XHRmdW5jdGlvbl8gPSB1bmRlZmluZWQ7XG5cdFx0fSBlbHNlIGlmIChvcHRpb25zLnRocm93ID09PSB0cnVlKSB7XG5cdFx0XHR0aHJvdyBuZXcgRXJyb3IoYEZ1bmN0aW9uIFxcYCR7ZnVuY3Rpb25OYW1lfVxcYCBjYW4gb25seSBiZSBjYWxsZWQgb25jZWApO1xuXHRcdH1cblxuXHRcdHJldHVybiByZXR1cm5WYWx1ZTtcblx0fTtcblxuXHRtaW1pY0Z1bmN0aW9uKG9uZXRpbWUsIGZ1bmN0aW9uXyk7XG5cdGNhbGxlZEZ1bmN0aW9ucy5zZXQob25ldGltZSwgY2FsbENvdW50KTtcblxuXHRyZXR1cm4gb25ldGltZTtcbn07XG5cbm9uZXRpbWUuY2FsbENvdW50ID0gZnVuY3Rpb25fID0+IHtcblx0aWYgKCFjYWxsZWRGdW5jdGlvbnMuaGFzKGZ1bmN0aW9uXykpIHtcblx0XHR0aHJvdyBuZXcgRXJyb3IoYFRoZSBnaXZlbiBmdW5jdGlvbiBcXGAke2Z1bmN0aW9uXy5uYW1lfVxcYCBpcyBub3Qgd3JhcHBlZCBieSB0aGUgXFxgb25ldGltZVxcYCBwYWNrYWdlYCk7XG5cdH1cblxuXHRyZXR1cm4gY2FsbGVkRnVuY3Rpb25zLmdldChmdW5jdGlvbl8pO1xufTtcblxuZXhwb3J0IGRlZmF1bHQgb25ldGltZTtcbiJdLCJuYW1lcyI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/.pnpm/onetime@7.0.0/node_modules/onetime/index.js\n");
+
+/***/ })
+
+};
+;

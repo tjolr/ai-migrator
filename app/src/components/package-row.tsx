@@ -109,7 +109,7 @@ export function PackageRow({
           )}
 
           <AccordionContent>
-            <div className="px-3 pb-3 border-t border-white/10">
+            <div className="px-6 py-4 border-t border-white/10">
               {isAnalyzing ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="flex items-center gap-3 text-white/60">
