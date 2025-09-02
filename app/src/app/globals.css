@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 23% 6%;
+    --foreground: 210 40% 98%;
+    --card: 220 23% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 220 23% 8%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 263 70% 50%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 220 23% 15%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 220 23% 12%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 220 23% 15%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 23% 15%;
+    --input: 220 23% 15%;
+    --ring: 263 70% 50%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+  
+  .glass-card {
+    @apply glass rounded-xl shadow-2xl;
+  }
+  
+  .cosmic-gradient {
+    background: linear-gradient(135deg, 
+      rgba(99, 102, 241, 0.1) 0%, 
+      rgba(147, 51, 234, 0.1) 50%, 
+      rgba(59, 130, 246, 0.1) 100%);
+  }
+}
