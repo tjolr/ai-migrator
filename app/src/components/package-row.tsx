@@ -13,7 +13,9 @@ interface PackageRowProps {
   updateType: 'major' | 'minor' | 'patch'
   isDev: boolean
   onUpgrade: () => void
+  onAnalyze: () => Promise<void>
   isUpgrading: boolean
+  isAnalyzing: boolean
   upgradeStatus?: 'analyzing' | 'upgrading' | 'success' | 'error'
   upgradeMessage?: string
   migrationData?: {
@@ -43,21 +45,32 @@ export function PackageRow({
   updateType, 
   isDev, 
   onUpgrade, 
+  onAnalyze,
   isUpgrading,
+  isAnalyzing,
   upgradeStatus,
   upgradeMessage,
   migrationData 
 }: PackageRowProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  
+  const handleAccordionChange = async (value: string) => {
+    const isOpening = !!value
+    setIsExpanded(isOpening)
+    
+    if (isOpening && !migrationData && !isAnalyzing) {
+      await onAnalyze()
+    }
+  }
 
   return (
     <div className="glass-card mb-2 overflow-hidden">
-      <Accordion type="single" collapsible value={isExpanded ? "item-1" : ""} onValueChange={(value) => setIsExpanded(!!value)}>
+      <Accordion type="single" collapsible value={isExpanded ? "item-1" : ""} onValueChange={handleAccordionChange}>
         <AccordionItem value="item-1" className="border-none">
           <div className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1">
-                <Package className="h-5 w-5 text-green-400" />
+                <Package className="h-4 w-4 text-green-400" />
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-white text-sm">{name}</h3>
@@ -71,32 +84,8 @@ export function PackageRow({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Badge variant={updateType} className="text-xs">{updateType}</Badge>
-                
-                {migrationData && (
-                  <div className="flex items-center gap-1">
-                    {riskIcons[migrationData.riskLevel]}
-                    <span className={`text-xs font-medium ${riskColors[migrationData.riskLevel]}`}>
-                      {migrationData.riskLevel.toUpperCase()}
-                    </span>
-                  </div>
-                )}
-
-                <Button 
-                  variant="glass" 
-                  size="sm" 
-                  onClick={onUpgrade}
-                  disabled={isUpgrading || upgradeStatus === 'success'}
-                  className="min-w-[70px] h-7 text-xs"
-                >
-                  {upgradeStatus === 'analyzing' && '🔍 Analyzing'}
-                  {upgradeStatus === 'upgrading' && '⬆️ Updating'}
-                  {upgradeStatus === 'success' && '✅ Done'}
-                  {upgradeStatus === 'error' && '❌ Failed'}
-                  {!upgradeStatus && !isUpgrading && 'Upgrade'}
-                  {!upgradeStatus && isUpgrading && '...'}
-                </Button>
 
                 <AccordionTrigger className="hover:no-underline p-0 w-6 h-6 rounded-md hover:bg-white/10">
                   <span className="sr-only">Toggle details</span>
@@ -120,46 +109,86 @@ export function PackageRow({
           )}
 
           <AccordionContent>
-            {migrationData ? (
-              <div className="px-3 pb-3 space-y-3 border-t border-white/10">
-                <div>
-                  <h4 className="font-medium text-white mb-2">Summary</h4>
-                  <p className="text-sm text-white/80">{migrationData.summary}</p>
+            <div className="px-3 pb-3 border-t border-white/10">
+              {isAnalyzing ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="flex items-center gap-3 text-white/60">
+                    <div className="animate-spin h-5 w-5 border border-blue-400 border-t-transparent rounded-full" />
+                    <span>Analyzing changes with AI...</span>
+                  </div>
                 </div>
-
-                {migrationData.breakingChanges.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-red-400 mb-2">Breaking Changes</h4>
-                    <ul className="space-y-1">
-                      {migrationData.breakingChanges.map((change, idx) => (
-                        <li key={idx} className="text-sm text-red-300 flex items-start gap-2">
-                          <span className="text-red-400 mt-1">•</span>
-                          <span>{change}</span>
-                        </li>
-                      ))}
-                    </ul>
+              ) : migrationData ? (
+                <div className="space-y-4">
+                  {/* Risk Level and Summary */}
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center gap-2">
+                        {riskIcons[migrationData.riskLevel]}
+                        <span className={`text-sm font-medium ${riskColors[migrationData.riskLevel]}`}>
+                          {migrationData.riskLevel.toUpperCase()} RISK
+                        </span>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-white mb-2 text-sm">What's New</h4>
+                        <p className="text-sm text-white/80">{migrationData.summary}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Upgrade Button - Bottom Right */}
+                    <Button 
+                      variant="glass" 
+                      onClick={onUpgrade}
+                      disabled={isUpgrading || upgradeStatus === 'success'}
+                      className="min-w-[80px] h-8"
+                    >
+                      {upgradeStatus === 'upgrading' && '⬆️ Updating'}
+                      {upgradeStatus === 'success' && '✅ Done'}
+                      {upgradeStatus === 'error' && '❌ Failed'}
+                      {!upgradeStatus && !isUpgrading && 'Upgrade'}
+                      {!upgradeStatus && isUpgrading && 'Upgrading...'}
+                    </Button>
                   </div>
-                )}
 
-                {migrationData.migrationSteps.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-blue-400 mb-2">Migration Steps</h4>
-                    <ol className="space-y-1">
-                      {migrationData.migrationSteps.map((step, idx) => (
-                        <li key={idx} className="text-sm text-blue-300 flex items-start gap-2">
-                          <span className="text-blue-400 mt-1">{idx + 1}.</span>
-                          <span>{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="px-3 pb-3 border-t border-white/10">
-                <p className="text-xs text-white/50">Click upgrade to see AI-powered migration analysis</p>
-              </div>
-            )}
+                  {/* Breaking Changes - Styled as Dangerous */}
+                  {migrationData.breakingChanges.length > 0 && (
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                      <h4 className="font-medium text-red-400 mb-2 flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        Breaking Changes
+                      </h4>
+                      <ul className="space-y-1">
+                        {migrationData.breakingChanges.map((change, idx) => (
+                          <li key={idx} className="text-sm text-red-300 flex items-start gap-2">
+                            <span className="text-red-400 mt-1">⚠️</span>
+                            <span>{change}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Migration Steps */}
+                  {migrationData.migrationSteps.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-blue-400 mb-2 text-sm">Migration Steps</h4>
+                      <ol className="space-y-1">
+                        {migrationData.migrationSteps.map((step, idx) => (
+                          <li key={idx} className="text-sm text-blue-300 flex items-start gap-2">
+                            <span className="text-blue-400 mt-1 min-w-[16px]">{idx + 1}.</span>
+                            <span>{step}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-6">
+                  <p className="text-sm text-white/50">Expand to see AI-powered migration analysis</p>
+                </div>
+              )}
+            </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>

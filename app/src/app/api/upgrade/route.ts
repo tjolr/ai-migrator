@@ -5,18 +5,10 @@ import type { PackageUpdate } from '@/lib/analyzer'
 
 export async function POST(request: NextRequest) {
   try {
-    const { packageUpdate, apiKey } = await request.json()
+    const { packageUpdate } = await request.json()
     
     if (!packageUpdate) {
       return NextResponse.json({ error: 'Package update data required' }, { status: 400 })
-    }
-
-    let migrationAnalysis = null
-    
-    if (apiKey) {
-      process.env.OPENAI_API_KEY = apiKey
-      const aiAnalyzer = new AIAnalyzer()
-      migrationAnalysis = await aiAnalyzer.analyzePackageUpgrade(packageUpdate as PackageUpdate)
     }
 
     const updater = new PackageUpdater()
@@ -24,7 +16,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      migrationAnalysis
+      message: `Successfully upgraded ${packageUpdate.name}`
     })
   } catch (error) {
     console.error('Upgrade error:', error)

@@ -33,8 +33,25 @@ export async function GET(request: NextRequest) {
     const results = await analyzer.analyzePackages(allPackages)
     
     return NextResponse.json({
-      packageFiles: packageFiles.map(f => ({ path: f.path, packageCount: Object.keys(f.dependencies).length + Object.keys(f.devDependencies).length })),
-      results
+      packageFiles: packageFiles.map(f => ({ 
+        path: f.path, 
+        relativePath: f.path.replace(cwd, '').replace(/^\//, '') || 'package.json',
+        displayPath: (() => {
+          const relativePath = f.path.replace(cwd, '').replace(/^\//, '') || 'package.json'
+          const parts = relativePath.split('/')
+          if (parts.length <= 3) return relativePath
+          return `.../${parts.slice(-3).join('/')}`
+        })(),
+        parentFolder: (() => {
+          const relativePath = f.path.replace(cwd, '').replace(/^\//, '') || 'package.json'
+          const parts = relativePath.split('/')
+          if (parts.length <= 1) return 'root'
+          return parts[parts.length - 2] || 'root'
+        })(),
+        packageCount: Object.keys(f.dependencies).length + Object.keys(f.devDependencies).length 
+      })),
+      results,
+      scanDirectory: cwd
     })
   } catch (error) {
     console.error('Scan error:', error)

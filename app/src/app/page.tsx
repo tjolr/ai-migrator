@@ -34,9 +34,10 @@ export default function Home() {
   const [isScanning, setIsScanning] = useState(false)
   const [upgradingPackages, setUpgradingPackages] = useState<Set<string>>(new Set())
   const [migrationData, setMigrationData] = useState<Record<string, MigrationData>>({})
-  const [packageFiles, setPackageFiles] = useState<Array<{ path: string; packageCount: number }>>([])
+  const [packageFiles, setPackageFiles] = useState<Array<{ path: string; relativePath: string; displayPath: string; parentFolder: string; packageCount: number }>>([])
   const [upgradeStatus, setUpgradeStatus] = useState<Record<string, 'analyzing' | 'upgrading' | 'success' | 'error'>>({})
   const [upgradeMessages, setUpgradeMessages] = useState<Record<string, string>>({})
+  const [analyzingPackages, setAnalyzingPackages] = useState<Set<string>>(new Set())
 
   const scanPackages = async () => {
     setIsScanning(true)
@@ -58,16 +59,19 @@ export default function Home() {
     }
   }
 
-  const upgradePackage = async (packageUpdate: PackageUpdate) => {
+  const analyzePackage = async (packageUpdate: PackageUpdate) => {
     const apiKey = localStorage.getItem("openai-api-key")
     const packageName = packageUpdate.name
     
-    setUpgradingPackages(prev => new Set([...prev, packageName]))
-    setUpgradeStatus(prev => ({ ...prev, [packageName]: 'analyzing' }))
-    setUpgradeMessages(prev => ({ ...prev, [packageName]: `Analyzing ${packageName}...` }))
+    if (!apiKey) {
+      alert('Please enter your OpenAI API key first')
+      return
+    }
+    
+    setAnalyzingPackages(prev => new Set([...prev, packageName]))
     
     try {
-      const response = await fetch('/api/upgrade', {
+      const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ packageUpdate, apiKey })
@@ -76,17 +80,45 @@ export default function Home() {
       const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(data.error || 'Upgrade failed')
+        throw new Error(data.error || 'Analysis failed')
       }
-      
-      setUpgradeStatus(prev => ({ ...prev, [packageName]: 'upgrading' }))
-      setUpgradeMessages(prev => ({ ...prev, [packageName]: `Updating ${packageName}...` }))
       
       if (data.migrationAnalysis) {
         setMigrationData(prev => ({
           ...prev,
           [packageName]: data.migrationAnalysis
         }))
+      }
+    } catch (error) {
+      console.error('Failed to analyze:', error)
+      alert(`Failed to analyze ${packageName}: ${error}`)
+    } finally {
+      setAnalyzingPackages(prev => {
+        const next = new Set(prev)
+        next.delete(packageName)
+        return next
+      })
+    }
+  }
+
+  const upgradePackage = async (packageUpdate: PackageUpdate) => {
+    const packageName = packageUpdate.name
+    
+    setUpgradingPackages(prev => new Set([...prev, packageName]))
+    setUpgradeStatus(prev => ({ ...prev, [packageName]: 'upgrading' }))
+    setUpgradeMessages(prev => ({ ...prev, [packageName]: `Updating ${packageName}...` }))
+    
+    try {
+      const response = await fetch('/api/upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packageUpdate })
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Upgrade failed')
       }
       
       setUpgradeStatus(prev => ({ ...prev, [packageName]: 'success' }))
@@ -149,14 +181,23 @@ export default function Home() {
               <Sparkles className="h-6 w-6 text-green-400" />
               <h1 className="text-xl font-bold text-white">AI Migrator</h1>
               {packageFiles.length > 0 && (
-                <Badge variant="outline" className="text-xs">
-                  {packageFiles.length} file{packageFiles.length !== 1 ? 's' : ''} found
-                </Badge>
-              )}
-              {totalUpdates > 0 && (
-                <Badge variant="secondary" className="text-xs">
-                  {totalUpdates} update{totalUpdates !== 1 ? 's' : ''} available
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    {packageFiles.length} file{packageFiles.length !== 1 ? 's' : ''} found
+                  </Badge>
+                  <div className="text-xs text-white/50 font-mono max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+                    {packageFiles.length === 1 ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-white/30">in</span>
+                        <span className="text-blue-400">{packageFiles[0].parentFolder}</span>
+                        <span className="text-white/30">/</span>
+                        <span>package.json</span>
+                      </div>
+                    ) : (
+                      <span>{packageFiles.length} locations</span>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -195,7 +236,9 @@ export default function Home() {
                     key={`${update.name}-${update.packageJsonPath}`}
                     {...update}
                     onUpgrade={() => upgradePackage(update)}
+                    onAnalyze={() => analyzePackage(update)}
                     isUpgrading={upgradingPackages.has(update.name)}
+                    isAnalyzing={analyzingPackages.has(update.name)}
                     upgradeStatus={upgradeStatus[update.name]}
                     upgradeMessage={upgradeMessages[update.name]}
                     migrationData={migrationData[update.name]}
@@ -214,7 +257,9 @@ export default function Home() {
                     key={`${update.name}-${update.packageJsonPath}`}
                     {...update}
                     onUpgrade={() => upgradePackage(update)}
+                    onAnalyze={() => analyzePackage(update)}
                     isUpgrading={upgradingPackages.has(update.name)}
+                    isAnalyzing={analyzingPackages.has(update.name)}
                     upgradeStatus={upgradeStatus[update.name]}
                     upgradeMessage={upgradeMessages[update.name]}
                     migrationData={migrationData[update.name]}
@@ -233,7 +278,9 @@ export default function Home() {
                     key={`${update.name}-${update.packageJsonPath}`}
                     {...update}
                     onUpgrade={() => upgradePackage(update)}
+                    onAnalyze={() => analyzePackage(update)}
                     isUpgrading={upgradingPackages.has(update.name)}
+                    isAnalyzing={analyzingPackages.has(update.name)}
                     upgradeStatus={upgradeStatus[update.name]}
                     upgradeMessage={upgradeMessages[update.name]}
                     migrationData={migrationData[update.name]}
