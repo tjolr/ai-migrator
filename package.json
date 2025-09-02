@@ -1,0 +1,35 @@
+{
+  "name": "ai-migrator",
+  "version": "1.0.0",
+  "description": "AI-powered package upgrade tool with intelligent migration guidance",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "ai-migrator": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js"
+  },
+  "keywords": ["npm", "upgrade", "migration", "ai", "cli"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.23",
+    "ai": "^5.0.29",
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "inquirer": "^9.2.12",
+    "semver": "^7.5.4",
+    "ora": "^6.3.1",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.0",
+    "@types/inquirer": "^9.0.7",
+    "@types/semver": "^7.5.4",
+    "tsx": "^4.4.0",
+    "typescript": "^5.2.2"
+  }
+}
