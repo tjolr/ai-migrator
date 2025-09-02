@@ -1,3 +1,6 @@
 {
-  "/page": "app/page.js"
+  "/api/scan/route": "app/api/scan/route.js",
+  "/page": "app/page.js",
+  "/api/upgrade/route": "app/api/upgrade/route.js",
+  "/api/analyze/route": "app/api/analyze/route.js"
 }

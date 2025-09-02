@@ -5,6 +5,7 @@ import { ApiKeyInput } from "@/components/api-key-input"
 import { PackageRow } from "@/components/package-row"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Toast } from "@/components/ui/toast"
 import { RefreshCw, Package, Sparkles } from "lucide-react"
 
 interface PackageUpdate {
@@ -38,6 +39,7 @@ export default function Home() {
   const [upgradeStatus, setUpgradeStatus] = useState<Record<string, 'analyzing' | 'upgrading' | 'success' | 'error'>>({})
   const [upgradeMessages, setUpgradeMessages] = useState<Record<string, string>>({})
   const [analyzingPackages, setAnalyzingPackages] = useState<Set<string>>(new Set())
+  const [toasts, setToasts] = useState<Array<{ id: string; message: string; type: 'success' | 'error' }>>([])
 
   const scanPackages = async () => {
     setIsScanning(true)
@@ -123,6 +125,14 @@ export default function Home() {
       
       setUpgradeStatus(prev => ({ ...prev, [packageName]: 'success' }))
       setUpgradeMessages(prev => ({ ...prev, [packageName]: `✅ Successfully upgraded ${packageName}` }))
+      
+      // Show success toast
+      const toastId = Date.now().toString()
+      setToasts(prev => [...prev, {
+        id: toastId,
+        message: `Successfully upgraded ${packageName} to ${packageUpdate.latestVersion}`,
+        type: 'success'
+      }])
       
       setTimeout(() => {
         setUpgradeStatus(prev => {
@@ -300,6 +310,16 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      {/* Toast notifications */}
+      {toasts.map((toast) => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+        />
+      ))}
     </div>
   )
 }
