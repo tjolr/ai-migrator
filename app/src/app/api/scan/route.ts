@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const scanner = new PackageScanner()
     const analyzer = new PackageAnalyzer()
     
-    const cwd = process.cwd()
+    const cwd = process.env.TARGET_SCAN_DIR || process.cwd()
     console.log('Scanning from:', cwd)
     const packageFiles = await scanner.findPackageJsonFiles(cwd)
     

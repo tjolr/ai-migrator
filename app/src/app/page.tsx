@@ -35,6 +35,8 @@ export default function Home() {
   const [upgradingPackages, setUpgradingPackages] = useState<Set<string>>(new Set())
   const [migrationData, setMigrationData] = useState<Record<string, MigrationData>>({})
   const [packageFiles, setPackageFiles] = useState<Array<{ path: string; packageCount: number }>>([])
+  const [upgradeStatus, setUpgradeStatus] = useState<Record<string, 'analyzing' | 'upgrading' | 'success' | 'error'>>({})
+  const [upgradeMessages, setUpgradeMessages] = useState<Record<string, string>>({})
 
   const scanPackages = async () => {
     setIsScanning(true)
@@ -58,7 +60,11 @@ export default function Home() {
 
   const upgradePackage = async (packageUpdate: PackageUpdate) => {
     const apiKey = localStorage.getItem("openai-api-key")
-    setUpgradingPackages(prev => new Set([...prev, packageUpdate.name]))
+    const packageName = packageUpdate.name
+    
+    setUpgradingPackages(prev => new Set([...prev, packageName]))
+    setUpgradeStatus(prev => ({ ...prev, [packageName]: 'analyzing' }))
+    setUpgradeMessages(prev => ({ ...prev, [packageName]: `Analyzing ${packageName}...` }))
     
     try {
       const response = await fetch('/api/upgrade', {
@@ -69,20 +75,58 @@ export default function Home() {
       
       const data = await response.json()
       
+      if (!response.ok) {
+        throw new Error(data.error || 'Upgrade failed')
+      }
+      
+      setUpgradeStatus(prev => ({ ...prev, [packageName]: 'upgrading' }))
+      setUpgradeMessages(prev => ({ ...prev, [packageName]: `Updating ${packageName}...` }))
+      
       if (data.migrationAnalysis) {
         setMigrationData(prev => ({
           ...prev,
-          [packageUpdate.name]: data.migrationAnalysis
+          [packageName]: data.migrationAnalysis
         }))
       }
+      
+      setUpgradeStatus(prev => ({ ...prev, [packageName]: 'success' }))
+      setUpgradeMessages(prev => ({ ...prev, [packageName]: `✅ Successfully upgraded ${packageName}` }))
+      
+      setTimeout(() => {
+        setUpgradeStatus(prev => {
+          const next = { ...prev }
+          delete next[packageName]
+          return next
+        })
+        setUpgradeMessages(prev => {
+          const next = { ...prev }
+          delete next[packageName]
+          return next
+        })
+      }, 3000)
       
       await scanPackages()
     } catch (error) {
       console.error('Failed to upgrade:', error)
+      setUpgradeStatus(prev => ({ ...prev, [packageName]: 'error' }))
+      setUpgradeMessages(prev => ({ ...prev, [packageName]: `❌ Failed to upgrade ${packageName}` }))
+      
+      setTimeout(() => {
+        setUpgradeStatus(prev => {
+          const next = { ...prev }
+          delete next[packageName]
+          return next
+        })
+        setUpgradeMessages(prev => {
+          const next = { ...prev }
+          delete next[packageName]
+          return next
+        })
+      }, 5000)
     } finally {
       setUpgradingPackages(prev => {
         const next = new Set(prev)
-        next.delete(packageUpdate.name)
+        next.delete(packageName)
         return next
       })
     }
@@ -95,63 +139,52 @@ export default function Home() {
   const totalUpdates = results ? results.major.length + results.minor.length + results.patch.length : 0
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Sparkles className="h-8 w-8 text-cosmic-400" />
-            <h1 className="text-4xl font-bold text-white">AI Migrator</h1>
-          </div>
-          <p className="text-white/70">AI-powered package upgrade tool with intelligent migration guidance</p>
-        </div>
-
-        <ApiKeyInput />
-
-        <div className="glass-card p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+    <div className="min-h-screen">
+      {/* Fixed Header */}
+      <div className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-white/10">
+        <div className="max-w-6xl mx-auto p-4">
+          <div className="flex items-center justify-between gap-4">
+            {/* Title Section */}
             <div className="flex items-center gap-3">
-              <Package className="h-6 w-6 text-cosmic-400" />
-              <h2 className="text-xl font-semibold text-white">Package Analysis</h2>
+              <Sparkles className="h-6 w-6 text-green-400" />
+              <h1 className="text-xl font-bold text-white">AI Migrator</h1>
               {packageFiles.length > 0 && (
-                <Badge variant="outline">
+                <Badge variant="outline" className="text-xs">
                   {packageFiles.length} file{packageFiles.length !== 1 ? 's' : ''} found
                 </Badge>
               )}
+              {totalUpdates > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {totalUpdates} update{totalUpdates !== 1 ? 's' : ''} available
+                </Badge>
+              )}
             </div>
-            
-            <Button 
-              variant="glass" 
-              onClick={scanPackages} 
-              disabled={isScanning}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${isScanning ? 'animate-spin' : ''}`} />
-              {isScanning ? 'Scanning...' : 'Refresh'}
-            </Button>
+
+            {/* Controls Section */}
+            <div className="flex items-center gap-4">
+              {/* Compact API Key Input */}
+              <ApiKeyInput />
+              
+              <Button 
+                variant="glass" 
+                size="sm"
+                onClick={scanPackages} 
+                disabled={isScanning}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isScanning ? 'animate-spin' : ''}`} />
+                {isScanning ? 'Scanning...' : 'Refresh'}
+              </Button>
+            </div>
           </div>
-
-          {packageFiles.length > 0 && (
-            <div className="mb-4">
-              <p className="text-sm text-white/60">Found package.json files:</p>
-              <div className="mt-2 space-y-1">
-                {packageFiles.map((file, idx) => (
-                  <div key={idx} className="text-xs text-white/80 font-mono">
-                    {file.path} ({file.packageCount} packages)
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {totalUpdates > 0 && (
-            <div className="text-sm text-white/80 mb-4">
-              Found {totalUpdates} package{totalUpdates !== 1 ? 's' : ''} with available updates
-            </div>
-          )}
         </div>
+      </div>
 
-        {results && (
-          <div className="space-y-6">
+      {/* Main Content */}
+      <div className="pt-20 p-6">
+        <div className="max-w-4xl mx-auto">
+          {results && (
+            <div className="space-y-6">
             {results.major.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-red-400 mb-3 flex items-center gap-2">
@@ -163,6 +196,8 @@ export default function Home() {
                     {...update}
                     onUpgrade={() => upgradePackage(update)}
                     isUpgrading={upgradingPackages.has(update.name)}
+                    upgradeStatus={upgradeStatus[update.name]}
+                    upgradeMessage={upgradeMessages[update.name]}
                     migrationData={migrationData[update.name]}
                   />
                 ))}
@@ -180,6 +215,8 @@ export default function Home() {
                     {...update}
                     onUpgrade={() => upgradePackage(update)}
                     isUpgrading={upgradingPackages.has(update.name)}
+                    upgradeStatus={upgradeStatus[update.name]}
+                    upgradeMessage={upgradeMessages[update.name]}
                     migrationData={migrationData[update.name]}
                   />
                 ))}
@@ -197,6 +234,8 @@ export default function Home() {
                     {...update}
                     onUpgrade={() => upgradePackage(update)}
                     isUpgrading={upgradingPackages.has(update.name)}
+                    upgradeStatus={upgradeStatus[update.name]}
+                    upgradeMessage={upgradeMessages[update.name]}
                     migrationData={migrationData[update.name]}
                   />
                 ))}
@@ -210,8 +249,9 @@ export default function Home() {
                 <p className="text-white/60">No updates available at this time.</p>
               </div>
             )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

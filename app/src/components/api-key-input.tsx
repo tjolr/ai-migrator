@@ -32,50 +32,39 @@ export function ApiKeyInput() {
   }
 
   return (
-    <div className="glass-card p-4 mb-6">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 text-sm text-white/80">
-          <Key className="h-4 w-4" />
-          <span>OpenAI API Key</span>
-        </div>
-        
-        <div className="flex-1 flex items-center gap-2">
-          <div className="relative flex-1 max-w-md">
-            <Input
-              type={showKey ? "text" : "password"}
-              placeholder="sk-..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="pr-10"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0 h-10 w-10 text-white/60 hover:text-white"
-              onClick={() => setShowKey(!showKey)}
-            >
-              {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
-          </div>
-          
-          <Button variant="glass" size="sm" onClick={handleSave} disabled={!apiKey.trim()}>
-            Save
-          </Button>
-          
-          {isStored && (
-            <Button variant="outline" size="sm" onClick={handleClear}>
-              Clear
-            </Button>
-          )}
-        </div>
-        
-        {isStored && (
-          <div className="text-xs text-green-400 flex items-center gap-1">
-            <div className="h-2 w-2 bg-green-400 rounded-full" />
-            Stored
-          </div>
-        )}
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 text-xs text-white/60">
+        <Key className="h-3 w-3" />
+        <span>API Key</span>
       </div>
+      
+      <div className="relative">
+        <Input
+          type={showKey ? "text" : "password"}
+          placeholder="sk-..."
+          value={apiKey}
+          onChange={(e) => setApiKey(e.target.value)}
+          className="w-32 h-7 text-xs pr-7"
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-0 top-0 h-7 w-7 text-white/40 hover:text-white"
+          onClick={() => setShowKey(!showKey)}
+        >
+          {showKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+        </Button>
+      </div>
+      
+      <Button variant="glass" size="sm" onClick={handleSave} disabled={!apiKey.trim()} className="h-7 text-xs px-2">
+        Save
+      </Button>
+      
+      {isStored && (
+        <div className="text-xs text-green-400 flex items-center gap-1">
+          <div className="h-1.5 w-1.5 bg-green-400 rounded-full" />
+        </div>
+      )}
     </div>
   )
 }

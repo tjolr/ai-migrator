@@ -111,13 +111,20 @@ async function runWebApp(port: string): Promise<void> {
   console.log(chalk.bold('🚀 Starting AI Migrator Web App\n'));
   
   const appDir = path.join(__dirname, '..', 'app');
+  const targetDir = process.cwd();
+  
   console.log(chalk.blue(`Starting Next.js app on port ${port}...`));
   console.log(chalk.gray(`App directory: ${appDir}`));
+  console.log(chalk.gray(`Scanning directory: ${targetDir}`));
   
   const child = spawn('pnpm', ['dev', '--port', port], {
     cwd: appDir,
     stdio: 'inherit',
-    shell: true
+    shell: true,
+    env: {
+      ...process.env,
+      TARGET_SCAN_DIR: targetDir
+    }
   });
   
   child.on('error', (error) => {
